@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test:tst": "node handlers/tst/tst",
+    "test:tst": "babel-node handlers/tst/tst",
     "scan": "babel-node index.js"
   },
   "babel": {

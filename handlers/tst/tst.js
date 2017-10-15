@@ -1,6 +1,7 @@
-var fs = require('fs');
-const N = 5
-// const N = 127
+import fs from 'fs'
+import { promisify } from 'util'
+
+const N = 127
 
 const hashTable = (debug = 'N') => {
     let table = []
@@ -11,17 +12,17 @@ const hashTable = (debug = 'N') => {
     
     // Cria hash
     const createHashIndex = (key, colision = 0) => {
-        let hash = 0;
+        let hash = 0
         for (var i = 0; i < key.length; i++) {
-            hash = (hash << 5) - hash + key.charCodeAt(i);
-            hash = hash >>> 0; 
+            hash = (hash << 5) - hash + key.charCodeAt(i)
+            hash = hash >>> 0
         }
         return colision == 0 ? Math.abs(hash % N) : N + Math.abs(hash % (2 * N))
     }
 
     // Adiciona na area de colisão
     const addToColisionArea = (hash, key) => {
-        colisionHash = createHashIndex(key, 1)
+        const colisionHash = createHashIndex(key, 1)
         table[hash].colision = colisionHash
         table[colisionHash] = { simbol: key, colision: -1 }
         return colisionHash
@@ -61,35 +62,29 @@ const hashTable = (debug = 'N') => {
 }
 
 // grava_TST_binario
-const convertToBinary = input => {
-    // cria arquivo de binario da table
-}
+// cria arquivo de binario da table
+const convertToBinary = (table, pathName) => promisify(fs.writeFile)(pathName, JSON.stringify(table), 'utf16le')
 
 // le_tst_binario
-const  readFromBinary = input => {
-    // le e insere na table um arquivo de binario
-}
+// le e insere na table um arquivo de binario
+const  readFromBinary = path => promisify(fs.readFile)(path)
 
 const test = () => {
-    const tableTest = hashTable(debug = 'S')
-    //read file
-    // fileTest.map(lineTest(tableTest))
-    // le binario gerado
-    // Tenta com as opções de consulta com os dados contidos no arquivo do 2 parametro \/
-    tableTest.actionTable('C', "A")
+    const tableTest = hashTable('S')
+    const fileTest = ['a', 'b', 'c']
+    fileTest.map((item, index) => lineTest(tableTest, item, index))
+
+    // Tenta com as opções de consulta com os dados contidos no arquivo do 2 parametro \/    
+    readFromBinary(`${__dirname}/output/test_1`)
+        .then(table => tableTest.resetTable(table.toString('utf8')))
+    tableTest.actionTable('C', "b")
     tableTest.printTable()
 }
 
-const lineTest = (table, item) => {
+const lineTest = (table, item, index) => {
     table.actionTable('I', item)
-    // grava em binario
+    convertToBinary(table, `${__dirname}/output/test_${index}`)
     table.resetTable()
 }
 
-// Teste
-const table1 = hashTable(debug = 'S')
-table1.actionTable('I', "A")
-table1.actionTable('I', "A")
-table1.actionTable('C', "A")
-table1.actionTable('C', "ATESTE") // -1
-table1.printTable()
+test()

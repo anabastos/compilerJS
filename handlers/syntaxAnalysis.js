@@ -1,3 +1,3 @@
-const syntaxScan = () => {}
+const transverser = console.log
 
-export default syntaxScan
+export default transverser
