@@ -66,7 +66,6 @@ const hashTable = (debug = 'N') => {
 const convertToBinary = (table, pathName) => promisify(fs.writeFile)(pathName, JSON.stringify(table), 'utf16le')
 
 // le_tst_binario
-// le e insere na table um arquivo de binario
 const  readFromBinary = path => promisify(fs.readFile)(path)
 
 const test = () => {
@@ -75,6 +74,7 @@ const test = () => {
     fileTest.map((item, index) => lineTest(tableTest, item, index))
 
     // Tenta com as opções de consulta com os dados contidos no arquivo do 2 parametro \/    
+    // le e insere na table um arquivo de binario
     readFromBinary(`${__dirname}/output/test_1`)
         .then(table => tableTest.resetTable(table.toString('utf8')))
     tableTest.actionTable('C', "b")
@@ -87,4 +87,4 @@ const lineTest = (table, item, index) => {
     table.resetTable()
 }
 
-test()
+export default { readFromBinary, hashTable, test }
