@@ -17,10 +17,22 @@ const readLines = (info, arr) => {
     const tokens = getReservedItens()
         .then(reservedItems => {
                 const formatReserved = reservedItems.toString().split('\n')
-                return arr.map((line, lineIndex) => {
-                    const filteredline = filterLine(line)
+                const tokenizer = arr.reduce((acc, line, lineIndex) => {
                     // começa processo de ler simbolos
-                    return generateToken(filteredline, lineIndex, table, formatReserved)})
+                    if (line.includes("%{")){
+                        acc.deps = " %{"
+                        const index = arr.indexOf('%{')
+                    }
+                    if (line.includes("%}")){
+                        acc.deps === "%{" ? acc.deps = null : errorHelper.lexError("%}", 'comment', `${lineIndex}`)
+                    }
+                    const filteredline = filterLine(line)   
+                    return ({
+                        tokens: [generateToken(filteredline, lineIndex, table, formatReserved), ...acc.tokens],
+                        deps: acc.deps
+                    })},
+                    { tokens: [], deps: null })
+                return tokenizer.tokens
             })
         .then(flatToken)
         .catch(console.error)
@@ -28,7 +40,10 @@ const readLines = (info, arr) => {
     return tokens
 }
 
-const generateToken = (filteredline, lineIndex, table, formatReserved) => readSimbol(filteredline, lineIndex, table, formatReserved)
+const generateToken = (filteredline, lineIndex, table, formatReserved) => {
+    const token = readSimbol(filteredline, lineIndex, table, formatReserved)
+    return token
+}
 
 // ler_simbolo() 
 //Gera token
@@ -40,13 +55,13 @@ const readSimbol = (item, line, table, reservedItems) => item.map((char, index) 
 
     const token = {value: char, type, tst: tstIndex, position}
     
-    return errorHelper.lex(char, type, position) || token
+    return errorHelper.lexRegex(char, type, position) || token
 })
 
 // Pega o tipo do token por regex
 const getTypeByRegex = item => {
     const checkedByRegex = Object.keys(regexObj).reduce((acc, regex) => {
-        return item.match(regex) 
+        return  item.match(regex)
             ? regexObj[regex] 
             : acc
     }, null)
@@ -57,7 +72,8 @@ const getTypeByRegex = item => {
 const filterLine = line => pipe(
     filterSpaces,
     removeTabsAndLF,
-    filterSingleComments
+    filterSingleComments,
+    filterMultiComment
 )(line)
 
 const removeTabsAndLF = arr => arr.filter(token => token.type !== ('LF' || 'tab'))
@@ -104,8 +120,10 @@ export default lexan
 //[x] agrupar chars
 //[x] considerar só um espaço
 //[x] considerar comentarios
-// considerar comentarios multilinha
-// abrir e fechar de delimitadores
-// diretiva de compilação(#)
+//[x] considerar comentarios multilinha p/ error
+//[ ] ignorar comentario multilinha
+//[x] abrir e fechar de delimitadores
+//[x] diretiva de compilação(#)
 //[x] checar se num reservado
 //[x] checar se simbolo reservado
+// erros

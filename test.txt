@@ -3,7 +3,7 @@ if ( ) { } else {
 }
 #erro
 #if
-/* teste */
-1 + 1.50 #
+%{ teste %}
+121 + 1.5 #
 {    }
 {
