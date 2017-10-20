@@ -1,4 +1,4 @@
-import { pipe, map, reduce } from 'ramda'
+import { pipe, map, reduce, flatten, curry, concat } from 'ramda'
 import { promisify } from 'util'
 import fs from 'fs'
 
@@ -12,18 +12,23 @@ const splitReaderToLines = content => content.toString().split('\n')
 // to_char()
 const toChar = content => content.map(line => line.split(' '))
 
-
-const readLines = arr => {
+const readLines = (info, arr) => {
     const table = tst.hashTable();
-    return getReservedItens().then(
-        reservedItems => {
-            const formatReserved = reservedItems.toString().split('\n')
-            return arr.map((line, lineIndex) => {
-                const filteredline = filterLine(line)
-                return readSimbol(filteredline, lineIndex, table, formatReserved)})
-        }
-    ).catch(console.error)
+    const tokens = getReservedItens()
+        .then(reservedItems => {
+                const formatReserved = reservedItems.toString().split('\n')
+                return arr.map((line, lineIndex) => {
+                    const filteredline = filterLine(line)
+                    // começa processo de ler simbolos
+                    return generateToken(filteredline, lineIndex, table, formatReserved)})
+            })
+        .then(flatToken)
+        .catch(console.error)
+    info === '#list_tst' && table.printTable()
+    return tokens
 }
+
+const generateToken = (filteredline, lineIndex, table, formatReserved) => readSimbol(filteredline, lineIndex, table, formatReserved)
 
 // ler_simbolo() 
 //Gera token
@@ -31,16 +36,12 @@ const readSimbol = (item, line, table, reservedItems) => item.map((char, index) 
     const typeOfChar = getTypeByRegex(char)
     const tstIndex = table.actionTable('I', char)
     const type = checkIfReserved(char, reservedItems) || typeOfChar
+    const position = `${line}:${index}`
 
-    const accepted = type !== null;
-    // accepted 
-        // ? console.log(`Cadeia aceita ${item}`)
-        // : console.log(`Cadeia rejeitada ${item}`)
-
-    // accepted || errorHelper('Léxico', line, `Simbolo ${item}  inexistente no alfabeto.`)
-    return makeTokenObj(char, type, tstIndex, {line, index})
+    const token = {value: char, type, tst: tstIndex, position}
+    
+    return errorHelper.lex(char, type, position) || token
 })
-
 
 // Pega o tipo do token por regex
 const getTypeByRegex = item => {
@@ -82,36 +83,29 @@ const getReservedItens = () => {
     return promisify(fs.readFile)('./utils/reservedWords.txt')
 }
 
-const checkIfReservedWord = (value, words) => words.includes(value) ? 'WORD' : null
+const checkIfReservedWord = (value, words) => {
+    const valueWord = value[0] === '#' ? value.slice(1) : value
+    return words.includes(valueWord) ? 'WORD' : null
+}
 const checkIfReservedSimbol = (value, words) => words.includes(value) ? 'SIMBOL' : null
 
-const makeTokenObj = (item, type, tstIndex, position) => ({ type: type, value: item, tst: tstIndex, position: `${position.line}:${position.index}`})
+const lexan = (info, file) => {
+    return pipe(
+        splitReaderToLines,
+        toChar,
+        curry(readLines)(info))(file)
+}
 
-const lexan = file => pipe(
-    splitReaderToLines,
-    toChar,
-    readLines)(file)
+const flatToken = lines => [].concat.apply([], lines);
 
 export default lexan
 
-
-// todo
-
-// errorHelper('Léxico', line, `Simbolo ${item}  inexistente no alfabeto.`)
-// errorHelper('Léxico', line, `Diretiva de compilação inexistente..`)
-// errorHelper('Léxico', line, `Comentários sem fechamento..`)
-// errorHelper('Léxico', line, `Constante alfanumerica sem encerramento..`)
-
+// TODO
+//[x] agrupar chars
 //[x] considerar só um espaço
 //[x] considerar comentarios
 // considerar comentarios multilinha
 // abrir e fechar de delimitadores
+// diretiva de compilação(#)
 //[x] checar se num reservado
 //[x] checar se simbolo reservado
-
-// definicao de constantes
-// NUMBER
-// - ALPHA
-// - IDENT
-// - EOF
-// - FLOAT

@@ -1,7 +1,9 @@
-( "ana" 8 x // t
+( "ana 8 x // t
 if ( ) { } else {    
 }
+#erro
+#if
 /* teste */
-1 + 1.50
+1 + 1.50 #
 {    }
 {
