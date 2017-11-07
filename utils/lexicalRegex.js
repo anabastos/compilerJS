@@ -4,7 +4,7 @@ export default {
     '\n': 'LF', //         LineFeed
     '[0-9]': 'd', //     Digito
     '\\.': 'PONTO',
-    '[%{|%}|//]': 'COMMENT',
+    '(%{|%}|\/\/)': 'COMMENT',
     '\\*': 'ASTERISCO',
     '[a-zA-Z_]': 'l', // A-Z e Underscore
     '[-+]?[0-9]': 'NUMBER',  

@@ -1,129 +1,112 @@
-import { pipe, map, reduce, flatten, curry, concat } from 'ramda'
-import { promisify } from 'util'
-import fs from 'fs'
+import { pipe, map, reduce, flatten, curry, concat } from 'ramda';
+import { promisify } from 'util';
+import fs from 'fs';
 
-import tst from './tst/tst'
-import regexObj from '../utils/lexicalRegex'
-import errorHelper from '../utils/errorHelper'
+import tst from './tst/tst';
+import regexObj from '../utils/lexicalRegex';
+import errorHelper from '../utils/errorHelper';
 
 // Separa em linhas
-const splitReaderToLines = content => content.toString().split('\n')
+const splitReaderToLines = content => content.toString().split('\n');
 
 // to_char()
-const toChar = content => content.map(line => line.split(' '))
+const toChar = content => content.map(line => line.split(' '));
 
-const readLines = (info, arr) => {
-    const table = tst.hashTable();
-    const tokens = getReservedItens()
-        .then(reservedItems => {
-                const formatReserved = reservedItems.toString().split('\n')
-                const tokenizer = arr.reduce((acc, line, lineIndex) => {
-                    // começa processo de ler simbolos
-                    if (line.includes("%{")){
-                        acc.deps = " %{"
-                        const index = arr.indexOf('%{')
-                    }
-                    if (line.includes("%}")){
-                        acc.deps === "%{" ? acc.deps = null : errorHelper.lexError("%}", 'comment', `${lineIndex}`)
-                    }
-                    const filteredline = filterLine(line)   
-                    return ({
-                        tokens: [generateToken(filteredline, lineIndex, table, formatReserved), ...acc.tokens],
-                        deps: acc.deps
-                    })},
-                    { tokens: [], deps: null })
-                return tokenizer.tokens
-            })
-        .then(flatToken)
-        .catch(console.error)
-    info === '#list_tst' && table.printTable()
-    return tokens
-}
+const readLines = async (info, arr) => {
+  // const table = tst.hashTable()
+  const table = await tst.createPopulatedTable()  
 
-const generateToken = (filteredline, lineIndex, table, formatReserved) => {
-    const token = readSimbol(filteredline, lineIndex, table, formatReserved)
-    return token
-}
+  const tokenizer = arr.reduce(
+    (acc, line, lineIndex) => {
+      // começa processo de ler simbolos
+      if (line.includes('%{')) {
+        acc.deps = ' %{';
+        const index = arr.indexOf('%{');
+      }
+      if (line.includes('%}')) {
+        acc.deps === '%{'
+          ? (acc.deps = null)
+          : errorHelper.lexError('%}', 'comment', `${lineIndex}`);
+      }
+      const filteredline = filterLine(line);
 
-// ler_simbolo() 
+      const tokenAcc = {
+        tokens: [generateToken(filteredline, lineIndex, table), ...acc.tokens],
+        deps: acc.deps
+      };
+      return tokenAcc;
+    },
+    { tokens: [], deps: null }
+  ).tokens;
+
+  const tokens = flatToken(tokenizer);
+  info === '#list_tst' && table.printTable();
+  return tokens;
+};
+
+const generateToken = (filteredline, lineIndex, table) => {
+  const token = readSimbol(filteredline, lineIndex, table);
+  return token;
+};
+
+// ler_simbolo()
 //Gera token
-const readSimbol = (item, line, table, reservedItems) => item.map((char, index) => {
-    const typeOfChar = getTypeByRegex(char)
-    const tstIndex = table.actionTable('I', char)
-    const type = checkIfReserved(char, reservedItems) || typeOfChar
-    const position = `${line}:${index}`
+const readSimbol = (item, line, table) =>
+  item.map((char, index) => {
+    const typeOfChar = getTypeByRegex(char);
+    const checkedReserved = checkIfReserved(char, table);
 
-    const token = {value: char, type, tst: tstIndex, position}
+    const type = checkedReserved.type || typeOfChar;
+    const position = `${line}:${index}`;
+
+    const token = { value: char, type, tst: checkedReserved.tst, position };
     
-    return errorHelper.lexRegex(char, type, position) || token
-})
+    return errorHelper.lexRegex(char, type, position) || token;
+  });
 
 // Pega o tipo do token por regex
 const getTypeByRegex = item => {
-    const checkedByRegex = Object.keys(regexObj).reduce((acc, regex) => {
-        return  item.match(regex)
-            ? regexObj[regex] 
-            : acc
-    }, null)
-    
-    return checkedByRegex
-}
+  const checkedByRegex = Object.keys(regexObj).reduce((acc, regex) => {
+    return item.match(regex) ? regexObj[regex] : acc;
+  }, null);
 
-const filterLine = line => pipe(
-    filterSpaces,
-    removeTabsAndLF,
-    filterSingleComments,
-    filterMultiComment
-)(line)
+  return checkedByRegex;
+};
 
-const removeTabsAndLF = arr => arr.filter(token => token.type !== ('LF' || 'tab'))
+const filterLine = line =>
+  pipe(filterSpaces, removeTabsAndLF, filterSingleComments)(line);
 
-const filterSpaces = arr => arr.filter((item) => item !== '');
+const removeTabsAndLF = arr =>
+  arr.filter(token => token.type !== ('LF' || 'tab'));
+
+const filterSpaces = arr => arr.filter(item => item !== '');
 // const filterSpaces = arr => arr.filter((item, i, arr) => arr[i - 1] !== ' ' || item !== ' ');
 
 const filterSingleComments = arr => {
-    const index = arr.indexOf('//')
-    return !!~index ? arr.splice(0, index) : arr
-}
+  const index = arr.indexOf('//');
+  return !!~index ? arr.splice(0, index) : arr;
+};
 
-const checkIfReserved = (value, reserved) => {
-    var indexToSplit = reserved.indexOf('-=');
-    
-    var words = reserved.slice(0, indexToSplit);
-    var simbols = reserved.slice(indexToSplit);
-    
-    return checkIfReservedSimbol(value, simbols) || checkIfReservedWord(value, words)
-}
+const checkIfReserved = (value, table) => {
+  const filteredValue =
+    value[0] === '#' || value[0] === '@' ? value.slice(1) : value;
+  const tstIndex = table.actionTable('C', filteredValue);
+  
+  const type = !!~tstIndex ? checkTypeOfReserved(filteredValue) : null
+  return { type: type, tst: tstIndex };
+};
+
+const checkTypeOfReserved = value =>
+  value.match('[a-zA-Z]+') ? 'WORD' : 'SIMBOL';
 
 const getReservedItens = () => {
-    return promisify(fs.readFile)('./utils/reservedWords.txt')
-}
-
-const checkIfReservedWord = (value, words) => {
-    const valueWord = value[0] === '#' ? value.slice(1) : value
-    return words.includes(valueWord) ? 'WORD' : null
-}
-const checkIfReservedSimbol = (value, words) => words.includes(value) ? 'SIMBOL' : null
+  return promisify(fs.readFile)('./utils/reservedWords.txt');
+};
 
 const lexan = (info, file) => {
-    return pipe(
-        splitReaderToLines,
-        toChar,
-        curry(readLines)(info))(file)
-}
+  return pipe(splitReaderToLines, toChar, curry(readLines)(info))(file);
+};
 
 const flatToken = lines => [].concat.apply([], lines);
 
-export default lexan
-
-// TODO
-//[x] agrupar chars
-//[x] considerar só um espaço
-//[x] considerar comentarios
-//[x] considerar comentarios multilinha p/ error
-//[ ] ignorar comentario multilinha
-//[x] abrir e fechar de delimitadores
-//[x] diretiva de compilação(#)
-//[x] checar se num reservado
-//[x] checar se simbolo reservado
-// erros
+export default lexan;

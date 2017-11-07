@@ -1,9 +1,11 @@
 ( "ana 8 x // t
+"alpha"
 if ( ) { } else {    
 }
-#erro
+@erro
 #if
-%{ teste %}
+ teste %}
 121 + 1.5 #
 {    }
 {
++ = >>=

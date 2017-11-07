@@ -30,12 +30,12 @@
 
 ## TODO 
 [x] Se debug == 's imprime: Simbolo, Hashing, Posição, Ação
-[ ] grava_TST_binario: grava tst no formato binário com uma unica operação(fwrite), serializa
+[x] grava_TST_binario: grava tst no formato binário com uma unica operação(fwrite), serializa
 a estrutura do disco
-[ ] le_tst_binario: inversa da primeira, fread
+[x] le_tst_binario: inversa da primeira, fread
 [x] imprime_tst: para fim de depuração
 [x] Hashmap
 [x] Função consulta insere: simbolo, ação(consulta ou inserção), debug("break", retrieve or insert, debug)
 [x] Função de inserção, retorna sempre a posição
 [x] Função de consulta, sempre retorna posição ou -1
-[ ] Teste
+[x] Teste

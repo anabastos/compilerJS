@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test:tst": "babel-node handlers/tst/tst",
-    "scan": "babel-node index.js"
+    "c": "babel-node index.js"
   },
   "babel": {
     "presets": [

@@ -5,7 +5,7 @@ import fs from 'fs'
 
 import lexan from './handlers/lexicalAnalysis'
 import transverser from './handlers/syntaxAnalysis'
-import test from './handlers/tst/tst'
+import tst from './handlers/tst/tst'
 
 console.log(bold('COMP NA8 - PUC SP 2017'))
 console.log('  ')
@@ -21,12 +21,11 @@ const compile = (input, info, tst) => {
     readFile(input)
         .then(curry(lexan)(info))
         .then(tokens => info === '#list_token_on' && console.log(tokens) || tokens)     
-        // .then(transverser)
         .catch(console.error)
 }
 
 // ATV 1: Testar TST 
-// test()
+// tst.test()
 
 
 // ATV 2: LEXAN
