@@ -12,32 +12,32 @@ const splitReaderToLines = content => content.toString().split('\n');
 // to_char()
 const toChar = content => content.map(line => line.split(' '));
 
+const tokenize = (arr, table) => arr.reduce(
+  (acc, line, lineIndex) => {
+    // começa processo de ler simbolos
+    if (line.includes('%{')) {
+      acc.deps = ' %{';
+      const index = arr.indexOf('%{');
+    }
+    if (line.includes('%}')) {
+      acc.deps === '%{'
+        ? (acc.deps = null)
+        : errorHelper.lexError('%}', 'comment', `${lineIndex}`);
+    }
+    const filteredline = filterLine(line);
+
+    const tokenAcc = {
+      tokens: [generateToken(filteredline, lineIndex, table), ...acc.tokens],
+      deps: acc.deps
+    };
+    return tokenAcc;
+  },
+  { tokens: [], deps: null }
+).tokens;
+
 const readLines = async (info, arr) => {
-  // const table = tst.hashTable()
   const table = await tst.createPopulatedTable()  
-
-  const tokenizer = arr.reduce(
-    (acc, line, lineIndex) => {
-      // começa processo de ler simbolos
-      if (line.includes('%{')) {
-        acc.deps = ' %{';
-        const index = arr.indexOf('%{');
-      }
-      if (line.includes('%}')) {
-        acc.deps === '%{'
-          ? (acc.deps = null)
-          : errorHelper.lexError('%}', 'comment', `${lineIndex}`);
-      }
-      const filteredline = filterLine(line);
-
-      const tokenAcc = {
-        tokens: [generateToken(filteredline, lineIndex, table), ...acc.tokens],
-        deps: acc.deps
-      };
-      return tokenAcc;
-    },
-    { tokens: [], deps: null }
-  ).tokens;
+  const tokenizer = tokenize(arr, table)
 
   const tokens = flatToken(tokenizer);
   info === '#list_tst' && table.printTable();
@@ -91,7 +91,6 @@ const checkIfReserved = (value, table) => {
   const filteredValue =
     value[0] === '#' || value[0] === '@' ? value.slice(1) : value;
   const tstIndex = table.actionTable('C', filteredValue);
-  
   const type = !!~tstIndex ? checkTypeOfReserved(filteredValue) : null
   return { type: type, tst: tstIndex };
 };

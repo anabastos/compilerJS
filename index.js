@@ -30,6 +30,6 @@ const compile = (input, info, tst) => {
 
 // ATV 2: LEXAN
 // INFOS: #list_token_on | #list_token_off | #list_tst | #list_tnt | #list_tgrf | #list_source_on | #list_source_off
-compile('test.txt', '#list_token_on', 'tst/output/test_0')
+compile('test.txt', '#list_token_on', 'tst/output/test_1')
 
 console.log(bgCyan('-=-=-=-=-=-=-=-'))
