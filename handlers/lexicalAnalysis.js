@@ -123,4 +123,4 @@ const lexan = (info, file) => {
   return pipe(splitReaderToLines, toChar, curry(readLines)(info))(file);
 };
 
-export default lexan;
+export default curry(lexan);

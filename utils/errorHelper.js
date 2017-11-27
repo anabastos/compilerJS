@@ -38,6 +38,12 @@ const successPrinter = (type) => {
   console.log(green(msg))
 }
 
+const errorPrinter = (type, position, error) => {
+  const msg = `Erro ${type} em ${position} - ${error}`;
+  console.log(red(msg));
+  return { error: true, msg };
+};
+
 const lexError = (char, type, position) => {
   return errorPrinter('Léxico', position, `Simbolo ${char} sem fechamendo.`);
 };
@@ -46,10 +52,10 @@ const syntaxError = (char, type, position) => {
   return errorPrinter('Sintático', position, type);
 };
 
-const errorPrinter = (type, position, error) => {
-  const msg = `Erro ${type} em ${position} - ${error}`;
-  console.log(red(msg));
-  return { error: true, msg };
+export default {
+  errorPrinter,
+  successPrinter,
+  lexRegex,
+  lexError,
+  syntaxError,
 };
-
-export default { errorPrinter, successPrinter, lexRegex, lexError };
