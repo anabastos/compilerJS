@@ -4,7 +4,7 @@ import { promisify } from 'util'
 import fs from 'fs'
 
 import lexan from './handlers/lexicalAnalysis'
-import transverser from './handlers/syntaxAnalysis'
+import parser from './handlers/syntaxAnalysis'
 import tst from './handlers/tst/tst'
 
 console.log(bold('COMP NA8 - PUC SP 2017'))
@@ -21,6 +21,7 @@ const compile = (input, info, tst) => {
     readFile(input)
         .then(curry(lexan)(info))
         .then(tokens => info === '#list_token_on' && console.log(tokens) || tokens)     
+        .then(parser)
         .catch(console.error)
 }
 
@@ -30,6 +31,6 @@ const compile = (input, info, tst) => {
 
 // ATV 2: LEXAN
 // INFOS: #list_token_on | #list_token_off | #list_tst | #list_tnt | #list_tgrf | #list_source_on | #list_source_off
-compile('test.txt', '#list_token_on', 'tst/output/test_1')
+compile('test2.txt', '#list_token_on', 'tst/output/test_1')
 
 console.log(bgCyan('-=-=-=-=-=-=-=-'))

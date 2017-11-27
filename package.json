@@ -22,10 +22,13 @@
     "babel-cli": "^6.26.0",
     "babel-plugin-transform-pipeline-operator": "^7.0.0-beta.3",
     "babel-preset-es2015": "^6.24.1",
-    "babel-preset-stage-2": "^6.24.1"
+    "babel-preset-stage-2": "^6.24.1",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.8.0"
   },
   "dependencies": {
     "colors": "^1.1.2",
+    "eslint": "^4.12.0",
     "ramda": "^0.25.0"
   }
 }

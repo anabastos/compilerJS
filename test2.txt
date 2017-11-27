@@ -1,0 +1,11 @@
+( "ana" 8 x // t
+"alpha"
+if ( ) { } else {    
+}
+erro
+if
+ teste
+121 + 1.5
+{    }
+{
++ = >>=

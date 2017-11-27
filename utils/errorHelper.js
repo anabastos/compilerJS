@@ -1,4 +1,4 @@
-import { red } from 'colors';
+import { red, green } from 'colors';
 
 const lexRegex = (char, type, position) => {
   const accepted = type !== null;
@@ -33,8 +33,17 @@ const lexRegex = (char, type, position) => {
   return errors;
 };
 
+const successPrinter = (type) => {
+  const msg = `Sem erros ${type}, seguindo para próxima fase da compilação!`
+  console.log(green(msg))
+}
+
 const lexError = (char, type, position) => {
   return errorPrinter('Léxico', position, `Simbolo ${char} sem fechamendo.`);
+};
+
+const syntaxError = (char, type, position) => {
+  return errorPrinter('Sintático', position, type);
 };
 
 const errorPrinter = (type, position, error) => {
@@ -43,4 +52,4 @@ const errorPrinter = (type, position, error) => {
   return { error: true, msg };
 };
 
-export default { errorPrinter, lexRegex, lexError };
+export default { errorPrinter, successPrinter, lexRegex, lexError };

@@ -1,4 +1,4 @@
-import { pipe, map, reduce, flatten, curry, concat } from 'ramda';
+import { concat, contains, curry, find, filter, map, pipe, propEq, reduce, addIndex } from 'ramda';
 import { promisify } from 'util';
 import fs from 'fs';
 
@@ -10,16 +10,16 @@ import errorHelper from '../utils/errorHelper';
 const splitReaderToLines = content => content.toString().split('\n');
 
 // to_char()
-const toChar = content => content.map(line => line.split(' '));
+const toChar = content => map(line => line.split(' '))(content);
 
-const tokenize = (arr, table) => arr.reduce(
+const tokenize = (arr, table) => addIndex(reduce)(
   (acc, line, lineIndex) => {
     // começa processo de ler simbolos
-    if (line.includes('%{')) {
+    if (contains('%{', line)) {
       acc.deps = ' %{';
       const index = arr.indexOf('%{');
     }
-    if (line.includes('%}')) {
+    if (contains('%}', line)) {
       acc.deps === '%{'
         ? (acc.deps = null)
         : errorHelper.lexError('%}', 'comment', `${lineIndex}`);
@@ -33,16 +33,19 @@ const tokenize = (arr, table) => arr.reduce(
     return tokenAcc;
   },
   { tokens: [], deps: null }
-).tokens;
+)(arr).tokens;
 
 const readLines = async (info, arr) => {
   const table = await tst.createPopulatedTable()  
-  const tokenizer = tokenize(arr, table)
+  const tokenizer = tokenize(arr, table);
 
   const tokens = flatToken(tokenizer);
   info === '#list_tst' && table.printTable();
-  return tokens;
-};
+
+  const lexError = find(propEq('error', true))(tokens)
+  lexError || errorHelper.successPrinter('léxicos')
+  return lexError ? { error: 'lexical' } : { tokens, table };
+}
 
 const generateToken = (filteredline, lineIndex, table) => {
   const token = readSimbol(filteredline, lineIndex, table);
@@ -52,23 +55,21 @@ const generateToken = (filteredline, lineIndex, table) => {
 // ler_simbolo()
 //Gera token
 const readSimbol = (item, line, table) =>
-  item.map((char, index) => {
+  addIndex(map)((char, index) => {
     const typeOfChar = getTypeByRegex(char);
     const checkedReserved = checkIfReserved(char, table);
-
     const type = checkedReserved.type || typeOfChar;
     const position = `${line}:${index}`;
-
     const token = { value: char, type, tst: checkedReserved.tst, position };
     
     return errorHelper.lexRegex(char, type, position) || token;
-  });
+  })(item);
 
 // Pega o tipo do token por regex
 const getTypeByRegex = item => {
-  const checkedByRegex = Object.keys(regexObj).reduce((acc, regex) => {
+  const checkedByRegex = reduce((acc, regex) => {
     return item.match(regex) ? regexObj[regex] : acc;
-  }, null);
+  }, null)(Object.keys(regexObj));
 
   return checkedByRegex;
 };
@@ -77,7 +78,7 @@ const filterLine = line =>
   pipe(filterSpaces, removeTabsAndLF, filterSingleComments)(line);
 
 const removeTabsAndLF = arr =>
-  arr.filter(token => token.type !== ('LF' || 'tab'));
+  filter(token => token.type !== ('LF' || 'tab'))(arr);
 
 const filterSpaces = arr => arr.filter(item => item !== '');
 // const filterSpaces = arr => arr.filter((item, i, arr) => arr[i - 1] !== ' ' || item !== ' ');
