@@ -6,19 +6,19 @@ const parser = tokenObj =>
 
 const topDown = obj => map(curry(parsingTable)(obj.table), obj.tokens);
 
-const parsingTable = (table, token, stackChain = ['$']) => {
-  const lambda = 'λ'; //vazio
+const parsingTable = (table, token, defStack = ['$']) => {
+  const lambda = 'λ'; // vazio
   const TST = table;
-  let simbol = token;
-  let pilha = stackChain;
+  const tokenSimbol = token;
+  const stackChain = defStack;
 
   const firstSet = {};
   const followSet = {};
 
   const getProduction = simbol => simbol;
 
-  const stack = simbol => append(simbol, chainsStack);
-  const pop = simbol => take(-1, chainsStack);
+  const stack = simbol => append(simbol, stackChain);
+  const pop = simbol => take(-1, stackChain);
   const isTerminal = simbol => simbol.type;
 
   const first = simbol => {};
@@ -28,9 +28,7 @@ const parsingTable = (table, token, stackChain = ['$']) => {
       simbol = token;
       pilha = chain;
     },
-    walk: () => {
-      return isTerminal(simbol);
-    }
+    walk: simbol => isTerminal(simbol),
   };
 };
 
