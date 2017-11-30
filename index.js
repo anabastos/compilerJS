@@ -33,6 +33,9 @@ const compile = (input, info) => {
 
 // INFOS: #list_token_on | #list_token_off | #list_tst | #list_tnt | #list_tgrf |
 // #list_source_on | #list_source_off
-compile('test2.txt', '#list_token_on', 'tst/output/test_1');
+const file = process.env.npm_package_config_file;
+console.log(`Compiling ${file}`);
+compile(`${file}.txt`, '#list_token_on', 'tst/output/test_1');
+// compile(`${process.env.npm_config_file || 'test2'}.txt`, '#list_token_on', 'tst/output/test_1');
 
 console.log(bgCyan('-=-=-=-=-=-=-=-'));

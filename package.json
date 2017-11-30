@@ -4,8 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test:tst": "babel-node handlers/tst/tst",
+    "test:tst": "babel-node handlers/tst/runtest",
     "c": "babel-node index.js"
+  },
+  "config": {
+    "file": "test2"
   },
   "babel": {
     "presets": [

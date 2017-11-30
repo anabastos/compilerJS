@@ -3,16 +3,22 @@
 
 ### Config
 ```bash
-# Instalar dependencias
-npm i
+npm install -g yarn
 ```
 
 ### Executar
 ```bash
-# Test TST
-npm run test:tst
 
-# Run process
-npm run scan
+# Instalar dependencias
+yarn
+
+# Tst test
+yarn run test:tst
+
+# Run Compiler
+yarn run c
+
+# Especifying test file
+yarn config set file test1
 
 ```
