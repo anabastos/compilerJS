@@ -1,5 +1,10 @@
-export default {
-    1: 'S -> F',
-    2: 'S -> (S + F)',
-    3: 'F -> a',
-  };
+export default [
+  'E -> TX',
+  'X -> +TX',
+  'X -> λ',
+  'T -> FY',
+  'Y -> *FY',
+  'Y -> λ',
+  'F -> a',
+  'F -> (E)',
+];

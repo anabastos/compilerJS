@@ -1,11 +1,4 @@
-( "ana" 8 x // t
-"alpha"
-if ( ) { } else {    
-}
-erro
-if
- teste
-121 + 1.5
-{    }
-{
-+ = >>=
+121 + 1.5 ; 
+if true then 10 ;
+while false then 10 ;
+var lala = 10 ;

@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { promisify } from 'util';
 
-const N = 127;
+const N = 62;
 
 const hashTable = (debug = 'N') => {
   let table = [];
