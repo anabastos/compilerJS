@@ -20,12 +20,15 @@ const grafoAlt = () => {};
 const topDown = (obj) => {
   const tables = { TST: obj.table, TNT: TNT.hashTable() };
   const TGRFTabled = curry(TGRF)(tables);
-  return reduce(TGRFTabled, {
+  const tgrf = reduce(TGRFTabled, {
     registry: [EOF],
     itgrf: -1,
     accepted: false,
     itgrfErro: -1, // Apontador pro nó da lista de tokens em erro
   }, obj.tokens);
+  console.log(tgrf);
+  console.log(sets.buildFirstSets());
+  console.log(sets.buildFollowSets());
 };
 
 const constructParsingTable = () => {};

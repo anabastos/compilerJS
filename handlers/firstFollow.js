@@ -36,23 +36,27 @@ const merge = (to, from, exclude = []) =>
 const firstOf = (symbol) => {
   if (firstSets[symbol]) firstSets[symbol];
 
-  const first = (firstSets[symbol] = {});
+  let first = (firstSets[symbol] = {});
 
   if (isTerminal(symbol)) {
     first[symbol] = true;
     return firstSets[symbol];
   }
 
-  let productionsForSymbol = getProductionsBySymbol(symbol);
-  // let production = getRHS(productionsForSymbol[k]);
-  // if (productionSymbol === LAMBDA) {
-  //   first[LAMBDA] = true;
-  //   break;
-  // }
-  // let firstOfNonTerminal = firstOf(productionSymbol);
-  // if (!firstOfNonTerminal[LAMBDA]) {
-  // merge(first, firstOfNonTerminal);
-  // merge(first, firstOfNonTerminal, [LAMBDA]);
+  const productionsForSymbol = getProductionsBySymbol(symbol);
+  const rightProductions = map(getRHS, productionsForSymbol);
+  map((productionSymbol) => {
+    if (productionSymbol === LAMBDA) {
+      first[LAMBDA] = true;
+    } else {
+      const firstOfNonTerminal = firstOf(productionSymbol);
+      if (!firstOfNonTerminal[LAMBDA]) {
+        first = merge(first, firstOfNonTerminal);
+      } else {
+        first = merge(first, firstOfNonTerminal, [LAMBDA]);
+      }
+    }
+  }, rightProductions);
   return first;
 };
 
@@ -75,18 +79,27 @@ const followOf = (symbol) => {
     follow[EOF] = true;
   }
 
-  let productionsWithSymbol = getProductionsWithSymbol(symbol);
-  // p cada
-  // let RHS = getRHS(production);
-  // if (LHS !== symbol) {
-  // merge(follow, followOf(LHS));
-  // }
-  // let firstOfFollow = firstOf(followSymbol);
-  //       if (!firstOfFollow[LAMBDA]) {
-  //         merge(follow, firstOfFollow);
-  //         break;
-  //       }
-  //       merge(follow, firstOfFollow, [LAMBDA]);
+  const productionsWithSymbol = getProductionsWithSymbol(symbol);
+  map((productionSymbol) => {
+    let newFollow;
+    const rightProduction = getRHS(productionsWithSymbol);
+    if (rightProduction.length === 1) { // {$}
+      const LHS = getLHS(productionSymbol);
+      if (LHS !== productionSymbol) { // To avoid cases like: B -> aB
+        newFollow = merge(follow, followOf(LHS));
+      }
+    }
+    const symbolIndex = rightProduction.indexOf(symbol);
+    const followIndex = symbolIndex + 1;
+    const followSymbol = rightProduction[followIndex];
+    const firstOfFollow = firstOf(followSymbol);
+    if (!firstOfFollow[LAMBDA]) {
+      newFollow = merge(follow, firstOfFollow);
+    }
+    newFollow = merge(follow, firstOfFollow, [LAMBDA]);
+    return newFollow;
+  }, productionsWithSymbol);
+
   return follow;
 };
 
